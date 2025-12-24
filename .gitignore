@@ -10,3 +10,18 @@ db.sqlite
 .env.*
 !.env.example
 default.profraw
+
+# Temporary files
+*.swp
+*.swo
+*~
+.vscode/settings.json
+
+# Log files
+*.log
+
+# IDE
+.idea/
+
+# OS files
+Thumbs.db
