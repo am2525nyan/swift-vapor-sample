@@ -3,6 +3,7 @@ import Fluent
 import FluentPostgresDriver
 import NIOSSL
 import PostgresNIO
+import Foundation
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -14,15 +15,30 @@ public func configure(_ app: Application) async throws {
     // Configure database
     if let databaseURL = Environment.get("DATABASE_URL") {
         // Heroku provides DATABASE_URL
-        // Add sslmode parameter to disable certificate verification
-        let urlWithSSL = databaseURL.contains("?")
-            ? databaseURL + "&sslmode=require"
-            : databaseURL + "?sslmode=require"
+        // Parse URL and configure with TLS
+        guard let url = URL(string: databaseURL),
+              let host = url.host,
+              let user = url.user,
+              let password = url.password else {
+            fatalError("Invalid DATABASE_URL")
+        }
+
+        let dbName = String(url.path.dropFirst())
+        let port = url.port ?? SQLPostgresConfiguration.ianaPortNumber
 
         var tlsConfig: TLSConfiguration = .makeClientConfiguration()
         tlsConfig.certificateVerification = .none
 
-        try app.databases.use(.postgres(url: urlWithSSL, tlsConfiguration: tlsConfig), as: .psql)
+        let postgresConfig = SQLPostgresConfiguration(
+            hostname: host,
+            port: port,
+            username: user,
+            password: password,
+            database: dbName,
+            tls: .require(try NIOSSLContext(configuration: tlsConfig))
+        )
+
+        app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     } else {
         // Local development fallback
         let postgresConfig = SQLPostgresConfiguration(
