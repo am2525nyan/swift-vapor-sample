@@ -6,15 +6,6 @@ func routes(_ app: Application) throws {
         "It works!"
     }
 
-    app.get("hello") { req async -> String in
-        "Hello, world!"
-    }
-
-    app.get("hello", ":name") { req -> String in
-        let name = req.parameters.get("name")!
-        return "Hello, \(name)!"
-    }
-
     // Create a new gift
     app.post("gifts") { req async throws -> Gift in
         let createRequest = try req.content.decode(CreateGiftRequest.self)
