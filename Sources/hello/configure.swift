@@ -1,6 +1,8 @@
 import Vapor
 import Fluent
 import FluentPostgresDriver
+import NIOSSL
+import PostgresNIO
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -12,7 +14,14 @@ public func configure(_ app: Application) async throws {
     // Configure database
     if let databaseURL = Environment.get("DATABASE_URL") {
         // Heroku provides DATABASE_URL
-        try app.databases.use(.postgres(url: databaseURL), as: .psql)
+        var tlsConfig: TLSConfiguration = .makeClientConfiguration()
+        tlsConfig.certificateVerification = .none
+
+        let nioSSLContext = try NIOSSLContext(configuration: tlsConfig)
+        var postgresConfig = try PostgresConfiguration(url: databaseURL)
+        postgresConfig.coreConfiguration.tls = .require(nioSSLContext)
+
+        app.databases.use(.postgres(configuration: postgresConfig), as: .psql)
     } else {
         // Local development fallback
         app.databases.use(
