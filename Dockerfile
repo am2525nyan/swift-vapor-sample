@@ -86,5 +86,6 @@ USER vapor:vapor
 EXPOSE 8080
 
 # Start the Vapor service when the image is run, default to listening on 8080 in production environment
+# Note: Vapor automatically reads the PORT environment variable set by Heroku
 ENTRYPOINT ["./hello"]
 CMD ["serve", "--env", "production", "--hostname", "0.0.0.0"]
