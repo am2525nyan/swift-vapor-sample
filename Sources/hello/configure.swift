@@ -55,10 +55,8 @@ public func configure(_ app: Application) async throws {
     // Add migrations
     app.migrations.add(CreateGift())
 
-    // Run migrations automatically (optional - use with caution in production)
-    if app.environment != .production {
-        try await app.autoMigrate()
-    }
+    // Run migrations automatically
+    try await app.autoMigrate()
 
     // Configure CORS to allow requests from frontend
     let corsConfiguration = CORSMiddleware.Configuration(
